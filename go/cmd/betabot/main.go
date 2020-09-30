@@ -233,7 +233,7 @@ func (bot *Bot) handleEvent(ctx context.Context, gme *bertymessenger.EventStream
 			if err != nil {
 				return err
 			}
-		} else if contact.State == bertymessenger.Contact_Established {
+		} else if contact.State == bertymessenger.Contact_Accepted {
 			// When contact was established, send message and a group invitation
 			time.Sleep(2 * time.Second)
 			bot.store.Convs = append(bot.store.Convs, Conversation{
