@@ -18,7 +18,6 @@ import (
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	grpcgw "github.com/grpc-ecosystem/grpc-gateway/runtime"
 	datastore "github.com/ipfs/go-datastore"
-	"github.com/markbates/pkger"
 	grpc_trace "go.opentelemetry.io/otel/instrumentation/grpctrace"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -31,7 +30,6 @@ import (
 	"berty.tech/berty/v2/go/internal/grpcutil"
 	"berty.tech/berty/v2/go/internal/ipfsutil"
 	"berty.tech/berty/v2/go/internal/lifecycle"
-	"berty.tech/berty/v2/go/internal/notification"
 	"berty.tech/berty/v2/go/internal/tracer"
 	"berty.tech/berty/v2/go/pkg/bertymessenger"
 	"berty.tech/berty/v2/go/pkg/bertyprotocol"
@@ -75,8 +73,8 @@ func (m *Manager) SetupRemoteNodeFlags(fs *flag.FlagSet) {
 func (m *Manager) SetupLocalMessengerServerFlags(fs *flag.FlagSet) {
 	m.Node.Messenger.requiredByClient = true
 	m.SetupLocalProtocolServerFlags(fs)
+	m.SetupNotificationManagerFlags(fs)
 	fs.BoolVar(&m.Node.Messenger.RebuildSqlite, "node.rebuild-db", false, "reconstruct messenger DB from OrbitDB logs")
-	fs.BoolVar(&m.Node.Messenger.DisableNotifications, "node.no-notif", false, "disable desktop notifications")
 	fs.StringVar(&m.Node.Messenger.DisplayName, "node.display-name", safeDefaultDisplayName(), "display name")
 	// node.db-opts // see https://github.com/mattn/go-sqlite3#connection-string
 }
@@ -84,8 +82,8 @@ func (m *Manager) SetupLocalMessengerServerFlags(fs *flag.FlagSet) {
 func (m *Manager) GetLocalProtocolServer() (bertyprotocol.Service, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	if m.ctx.Err() != nil {
-		return nil, m.ctx.Err()
+	if m.GetContext().Err() != nil {
+		return nil, m.GetContext().Err()
 	}
 	return m.getLocalProtocolServer()
 }
@@ -117,7 +115,7 @@ func (m *Manager) getLocalProtocolServer() (bertyprotocol.Service, error) {
 
 	// construct http api endpoint
 	// ignore error to allow two berty instances in the same place
-	if m.Node.Protocol.IPFSAPIListeners != "" {
+	if m.Node.Protocol.IPFSAPIListeners != nil {
 		err = ipfsutil.ServeHTTPApi(logger, m.Node.Protocol.ipfsNode, "")
 		if err != nil {
 			logger.Warn("API Ipfs error", zap.Error(err))
@@ -153,14 +151,14 @@ func (m *Manager) getLocalProtocolServer() (bertyprotocol.Service, error) {
 			OrbitDB:        odb,
 		}
 
-		m.Node.Protocol.server, err = bertyprotocol.New(m.ctx, opts)
+		m.Node.Protocol.server, err = bertyprotocol.New(m.GetContext(), opts)
 		if err != nil {
 			return nil, errcode.TODO.Wrap(err)
 		}
 
 		// register grpc service
 		bertyprotocol.RegisterProtocolServiceServer(grpcServer, m.Node.Protocol.server)
-		if err := bertyprotocol.RegisterProtocolServiceHandlerServer(m.ctx, gatewayMux, m.Node.Protocol.server); err != nil {
+		if err := bertyprotocol.RegisterProtocolServiceHandlerServer(m.GetContext(), gatewayMux, m.Node.Protocol.server); err != nil {
 			return nil, errcode.TODO.Wrap(err)
 		}
 	}
@@ -215,7 +213,7 @@ func (m *Manager) getGRPCClientConn() (*grpc.ClientConn, error) {
 		grpcServer := grpc.NewServer(serverOpts...)
 
 		// buffer-based client conn
-		bl := grpcutil.NewBufListener(m.ctx, 256*1024)
+		bl := grpcutil.NewBufListener(m.GetContext(), 256*1024)
 		cc, err := bl.NewClientConn(clientOpts...)
 		if err != nil {
 			return nil, errcode.TODO.Wrap(err)
@@ -247,6 +245,19 @@ func (m *Manager) GetMessengerClient() (bertymessenger.MessengerServiceClient, e
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	return m.getMessengerClient()
+}
+
+func (m *Manager) SetLifecycleManager(manager *lifecycle.Manager) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	// the following check is here to help developers avoid having
+	// strange states by using multiple instances of the lifecycle manager
+	if m.Node.Messenger.lcmanager != nil {
+		panic("initutil.SetLifecycleManager was called but there was already an existing value")
+	}
+
+	m.Node.Messenger.lcmanager = manager
 }
 
 func (m *Manager) GetLifecycleManager() *lifecycle.Manager {
@@ -311,6 +322,8 @@ func (m *Manager) GetGRPCServer() (*grpc.Server, *grpcgw.ServeMux, error) {
 var grpcLoggerConfigured = false
 
 func (m *Manager) getGRPCServer() (*grpc.Server, *grpcgw.ServeMux, error) {
+	m.applyDefaults()
+
 	if m.Node.GRPC.server != nil {
 		return m.Node.GRPC.server, m.Node.GRPC.gatewayMux, nil
 	}
@@ -378,18 +391,20 @@ func (m *Manager) getGRPCServer() (*grpc.Server, *grpcgw.ServeMux, error) {
 		if err != nil {
 			return nil, nil, err
 		}
+		m.Node.GRPC.listeners = make([]grpcutil.Listener, len(maddrs))
 
 		server := grpcutil.Server{
 			GRPCServer: grpcServer,
 			GatewayMux: grpcGatewayMux,
 		}
 
-		for _, maddr := range maddrs {
+		for idx, maddr := range maddrs {
 			maddrStr := maddr.String()
 			l, err := grpcutil.Listen(maddr)
 			if err != nil {
 				return nil, nil, errcode.TODO.Wrap(err)
 			}
+			m.Node.GRPC.listeners[idx] = l
 
 			m.workers.Add(func() error {
 				m.initLogger.Info("serving", zap.String("maddr", maddrStr))
@@ -405,6 +420,12 @@ func (m *Manager) getGRPCServer() (*grpc.Server, *grpcgw.ServeMux, error) {
 	m.Node.GRPC.server = grpcServer
 	m.Node.GRPC.gatewayMux = grpcGatewayMux
 	return m.Node.GRPC.server, m.Node.GRPC.gatewayMux, nil
+}
+
+func (m *Manager) GetGRPCListeners() []grpcutil.Listener {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	return m.Node.GRPC.listeners
 }
 
 func (m *Manager) GetMessengerDB() (*gorm.DB, error) {
@@ -484,14 +505,9 @@ func (m *Manager) getLocalMessengerServer() (bertymessenger.MessengerServiceServ
 	}
 
 	// configure notifications
-	var notifmanager notification.Manager
-	{
-		notifLogger := logger.Named("notif")
-		if m.Node.Messenger.DisableNotifications {
-			notifmanager = notification.NewLoggerManager(notifLogger)
-		} else {
-			notifmanager = notification.NewDesktopManager(notifLogger, pkger.Include("/assets/Buck_Berty_Icon_Card.svg"))
-		}
+	notifmanager, err := m.getNotificationManager()
+	if err != nil {
+		return nil, errcode.TODO.Wrap(err)
 	}
 
 	// local protocol server
@@ -501,7 +517,7 @@ func (m *Manager) getLocalMessengerServer() (bertymessenger.MessengerServiceServ
 	}
 
 	// protocol client
-	protocolClient, err := bertyprotocol.NewClient(m.ctx, protocolServer, nil, nil) // FIXME: setup tracing
+	protocolClient, err := bertyprotocol.NewClient(m.GetContext(), protocolServer, nil, nil) // FIXME: setup tracing
 	if err != nil {
 		return nil, errcode.TODO.Wrap(err)
 	}
@@ -523,7 +539,7 @@ func (m *Manager) getLocalMessengerServer() (bertymessenger.MessengerServiceServ
 
 	// register grpc service
 	bertymessenger.RegisterMessengerServiceServer(grpcServer, messengerServer)
-	if err := bertymessenger.RegisterMessengerServiceHandlerServer(m.ctx, gatewayMux, messengerServer); err != nil {
+	if err := bertymessenger.RegisterMessengerServiceHandlerServer(m.GetContext(), gatewayMux, messengerServer); err != nil {
 		return nil, errcode.TODO.Wrap(err)
 	}
 

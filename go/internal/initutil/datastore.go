@@ -2,8 +2,8 @@ package initutil
 
 import (
 	"flag"
+	"fmt"
 	"os"
-	"path"
 
 	datastore "github.com/ipfs/go-datastore"
 	sync_ds "github.com/ipfs/go-datastore/sync"
@@ -27,23 +27,25 @@ func (m *Manager) GetDatastoreDir() (string, error) {
 }
 
 func (m *Manager) getDatastoreDir() (string, error) {
-	_, err := m.getLogger() // needed by m.initLogger below
-	if err != nil {
-		return "", err
-	}
+	m.applyDefaults()
 
 	if m.Datastore.dir != "" {
 		return m.Datastore.dir, nil
 	}
 	switch {
+	case m.Datastore.Dir == "" && !m.Datastore.InMemory:
+		return "", errcode.TODO.Wrap(fmt.Errorf("--store.dir is empty"))
 	case m.Datastore.Dir == InMemoryDir,
 		m.Datastore.Dir == "",
 		m.Datastore.InMemory:
 		return InMemoryDir, nil
 	}
 
-	m.Datastore.dir = path.Join(m.Datastore.Dir, "berty")
-	_, err = os.Stat(m.Datastore.dir)
+	m.Datastore.dir = m.Datastore.Dir
+	// FIXME: support multiaccounts
+	//        m.Datastore.dir = path.Join(m.Datastore.Dir, "acc0")
+
+	_, err := os.Stat(m.Datastore.dir)
 	switch {
 	case os.IsNotExist(err):
 		if err := os.MkdirAll(m.Datastore.dir, 0o700); err != nil {
@@ -64,6 +66,8 @@ func (m *Manager) GetRootDatastore() (datastore.Batching, error) {
 }
 
 func (m *Manager) getRootDatastore() (datastore.Batching, error) {
+	m.applyDefaults()
+
 	if m.Datastore.rootDS != nil {
 		return m.Datastore.rootDS, nil
 	}
