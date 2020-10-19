@@ -53,37 +53,9 @@ type Manager struct {
 		rootDS     datastore.Batching
 	} `json:"Datastore,omitempty"`
 	Node struct {
-		Preset Preset
-		// Enum :
-		// - "" : none, default
-		// - "anonymity" : Enforced anonymity
+		Preset   Preset
 		Protocol struct {
 			// IPFS
-<<<<<<< HEAD
-			IPFSListeners      string
-			IPFSAPIListeners   string
-			IPFSWebUIListener  string
-			Announce           string
-			NoAnnounce         string
-			LocalDiscovery     bool
-			MinBackoff         time.Duration
-			MaxBackoff         time.Duration
-			DisableIPFSNetwork bool
-			// RdvpMaddrs store a list of rdvp server maddr.
-			// The entry : `:dev:` will add the devs servers to the list (default).
-			// The netry : `:none:` will disable all rdvp servers.
-			RdvpMaddrs flagStringSlice
-
-			// Tor
-			Tor struct {
-				Enabled    bool
-				BinaryPath string // if "" that mean embedded must be used.
-			}
-
-			// Auth
-			AuthSecret    string
-			AuthPublicKey string
-=======
 			IPFSListeners      flagStringSlice `json:"IPFSListeners,omitempty"`
 			IPFSAPIListeners   flagStringSlice `json:"IPFSAPIListeners,omitempty"`
 			IPFSWebUIListener  string          `json:"IPFSWebUIListener,omitempty"`
@@ -96,7 +68,10 @@ type Manager struct {
 			RdvpMaddrs         flagStringSlice `json:"RdvpMaddrs,omitempty"`
 			AuthSecret         string          `json:"AuthSecret,omitempty"`
 			AuthPublicKey      string          `json:"AuthPublicKey,omitempty"`
->>>>>>> 15f0a0fa... feat(bridge): use initutil to initialize the mobile bridge
+			Tor                struct {
+				Enabled    bool   `json:"Enabled,omitempty"`
+				BinaryPath string `json:"BinaryPath,omitempty"`
+			} `json:"Tor,omitempty"`
 
 			// internal
 			needAuth         bool
