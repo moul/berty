@@ -65,6 +65,8 @@ func daemonCommand() *ffcli.Command {
 				logger.Named("main").Info("daemon initialized", zap.String("peer-id", info.PeerID), zap.Strings("listeners", info.Listeners))
 			}
 
+			fmt.Println("HERE, DISPLAY QR + SOME STARTUP INFO")
+
 			return manager.RunWorkers()
 		},
 	}
