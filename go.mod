@@ -8,7 +8,7 @@ require (
 	berty.tech/go-libp2p-tor-transport v0.8.4
 	berty.tech/go-orbit-db v1.10.11
 	berty.tech/ipfs-webui-packed v1.0.0-v2.11.4-1
-	fyne.io/fyne/v2 v2.0.2
+	fyne.io/fyne/v2 v2.0.3
 	github.com/Masterminds/goutils v1.1.0 // indirect
 	github.com/Masterminds/semver v1.5.0
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
@@ -113,7 +113,7 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/square/go-jose.v2 v2.5.1
 	gorm.io/driver/sqlite v1.1.4
-	gorm.io/gorm v1.21.7
+	gorm.io/gorm v1.21.9
 	moul.io/godev v1.7.0
 	moul.io/openfiles v1.2.0
 	moul.io/progress v1.3.2
