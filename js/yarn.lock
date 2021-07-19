@@ -8322,10 +8322,10 @@ react-native-bootsplash@^3.1.2:
     fs-extra "^9.0.1"
     jimp "^0.16.1"
 
-react-native-camera@^3.42.0:
-  version "3.42.0"
-  resolved "https://registry.yarnpkg.com/react-native-camera/-/react-native-camera-3.42.0.tgz#e9778b77a2da96e42d604d1766ca331281b5b85f"
-  integrity sha512-DFsZeRy9TKP/pGef5iLX1AWxP9eAnlbGcA76fEoFXse6EP56sdgjYe+wudJsGZ//arGrYBqjq6wog13HMsJaoQ==
+react-native-camera@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-camera/-/react-native-camera-4.0.0.tgz#c3c835d1e22ab1c867be91b5b1fdbc60e1c17fb2"
+  integrity sha512-o8oHozAlJhC73s1/1MqvPob9VYnoHYXqFPIJwlWeNyySOAsyOV5XcYD4eYOnCRr/BKxAkQ3goZ6uI6cVSfzoWA==
   dependencies:
     prop-types "^15.6.2"
 
