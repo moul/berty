@@ -27,8 +27,8 @@ var tcpBertyRelays = []string{
 }
 
 var quicBertyRelays = []string{
-	"/ip4/51.15.20.183/udp/4141/quic/p2p/12D3KooWCJ1xFLi65WY2n3H8xLrDp3HY4AASqGuh2AAwcwKBBNQn",
-	"/ip4/127.0.0.1/udp/4141/quic/p2p/12D3KooWCJ1xFLi65WY2n3H8xLrDp3HY4AASqGuh2AAwcwKBBNQn",
+	"/ip4/51.15.20.183/udp/4444/quic/p2p/12D3KooWCJ1xFLi65WY2n3H8xLrDp3HY4AASqGuh2AAwcwKBBNQn",
+	"/ip4/127.0.0.1/udp/4444/quic/p2p/12D3KooWCJ1xFLi65WY2n3H8xLrDp3HY4AASqGuh2AAwcwKBBNQn",
 }
 
 var tcpIPFSRelays = []string{

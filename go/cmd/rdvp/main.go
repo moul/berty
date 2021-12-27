@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	// nolint:staticcheck
+	ipfsLog "github.com/ipfs/go-log/v2"
 	libp2p "github.com/libp2p/go-libp2p"
 	libp2p_cicuit "github.com/libp2p/go-libp2p-circuit"
 	libp2p_ci "github.com/libp2p/go-libp2p-core/crypto"
@@ -98,7 +99,13 @@ func main() {
 			}
 
 			mrand.Seed(srand.MustSecure())
+			tmpLogger := ipfsLog.Logger("TATA")
 			logger, cleanup, err := logutil.NewLogger(logutil.NewStdStream(logFilters, logFormat, logToFile))
+			ipfsLog.Logger("TOTO").Warn("YO")
+			ipfsLog.Logger("TOTO").Debug("YO")
+			logger.Warn("yo2")
+			tmpLogger.Warn("yo3")
+			fmt.Println("yo4")
 			if err != nil {
 				return errcode.TODO.Wrap(err)
 			}

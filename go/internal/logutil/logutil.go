@@ -152,13 +152,21 @@ func NewLogger(streams ...Stream) (*zap.Logger, func(), error) {
 
 	if withIPFS {
 		blah := zapconfig.New().SetLevel(zap.DebugLevel).MustBuild()
-		ipfs_log.SetPrimaryCore(blah.Core())
+		blahCore := blah.Core()
+		fmt.Println("#### SET_PRIMARY_CORE", blahCore)
+		ipfs_log.SetDebugLogging()
+		//ipfs_log.SetPrimaryCore(blahCore)
 		//ipfs_log.SetPrimaryCore(tee.Core())
+		blah.Debug("hello world!")
+		ipfs_log.Logger("JUST_A_TEST").Warn("SALUT")
 	} else {
 		ipfs_log.SetPrimaryCore(zapcore.NewNopCore())
 	}
 
-	cleanup = u.CombineFuncs(cleanup, func() { _ = tee.Sync() })
+	cleanup = u.CombineFuncs(cleanup, func() {
+		fmt.Println("#### CLEANUP")
+		_ = tee.Sync()
+	})
 
 	return tee.Named("bty"), cleanup, nil
 }
