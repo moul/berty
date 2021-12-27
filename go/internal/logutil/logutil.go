@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"moul.io/u"
+	"moul.io/zapconfig"
 	"moul.io/zapfilter"
 
 	"berty.tech/berty/v2/go/pkg/errcode"
@@ -150,7 +151,9 @@ func NewLogger(streams ...Stream) (*zap.Logger, func(), error) {
 	)
 
 	if withIPFS {
-		ipfs_log.SetPrimaryCore(tee.Core())
+		blah := zapconfig.New().SetLevel(zap.DebugLevel).MustBuild()
+		ipfs_log.SetPrimaryCore(blah.Core())
+		//ipfs_log.SetPrimaryCore(tee.Core())
 	} else {
 		ipfs_log.SetPrimaryCore(zapcore.NewNopCore())
 	}
