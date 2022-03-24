@@ -32,7 +32,8 @@ jobs:
         id: semantic
         uses: docker://ghcr.io/codfish/semantic-release-action:v1
         with:
-          branches: ['master']
+          branches: |
+            ['master']
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Install bertygui dependencies
