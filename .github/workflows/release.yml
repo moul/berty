@@ -37,18 +37,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Install bertygui dependencies
-        if: steps.semantic.outputs.new-release-published == 'true'
         run: |
           sudo apt update
           sudo apt install -f
           sudo apt install -f -y libgl1-mesa-glx libgl1-mesa-dev xorg-dev
       - name: Set up Go
-        if: steps.semantic.outputs.new-release-published == 'true'
         uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.golang }}
       - name: Cache Go modules
-        if: steps.semantic.outputs.new-release-published == 'true'
         uses: actions/cache@v2.1.6
         with:
           path: ~/go/pkg/mod
