@@ -1,17 +1,8 @@
 name: Release
 on:
   push:
-    tags:
-      - v*
     branches:
       - master
-    paths:
-      - "go/**"
-      - "!go/**.md"
-      - ".goreleaser"
-      - "go.*"
-      - "**.go"
-      - ".github/workflows/release.yml"
   pull_request:
     paths:
       - "go/**"
@@ -44,7 +35,7 @@ jobs:
           branches: ['master']
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install libgl
+      - name: Install bertygui dependencies
         if: steps.semantic.outputs.new-release-published == 'true'
         run: |
           sudo apt update
