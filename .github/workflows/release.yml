@@ -36,10 +36,13 @@ jobs:
             ['master']
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install bertygui dependencies
+      - name: Install multilib dependencies
         run: |
           sudo apt update
           sudo apt install -f
+          sudo apt install -f gcc-multilib g++-multilib
+      - name: Install bertygui dependencies
+        run: |
           sudo apt install -f -y libgl1-mesa-glx libgl1-mesa-dev xorg-dev
       - name: Set up Go
         uses: actions/setup-go@v2
