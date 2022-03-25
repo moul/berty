@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        golang: [1.18.x]
+        golang: [1.17.x]
     env:
       OSXCROSS_DIR: /home/runner/work/osxcross
     steps:
