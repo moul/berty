@@ -5,34 +5,44 @@ before:
   hooks:
     - go mod download
 builds:
-  -
-    id: berty
-    env:
-      - CGO_ENABLED=1
-    goos:
-      - linux
-      - darwin
-      - windows
+  - id: linux
+    binary: berty
+    env: ['CGO_ENABLED=1']
+    goos: ['linux']
+    goarch: ['amd64']
     dir: go/cmd/berty
-    ignore:
-      - {goos: darwin, goarch: 386}
-      - {goos: windows, goarch: 386}
-      - {goos: windows, goarch: arm64}
-      - {goos: linux, goarch: 386}
-      - {goos: linux, goarch: arm64}
     flags:
       - "-a"
     ldflags:
       - '-X berty.tech/berty/v2/go/pkg/bertyversion.VcsRef=$(VCS_REF) -X berty.tech/berty/v2/go/pkg/bertyversion.Version=$(VERSION)'
-  -
-    id: bertyguy
-    binary: bertygui
+  - id: windows
+    binary: berty
+    env: ['CGO_ENABLED=1']
+    goos: ['windows']
+    goarch: ['amd64']
+    dir: go/cmd/berty
+    flags:
+      - "-a"
+    ldflags:
+      - '-X berty.tech/berty/v2/go/pkg/bertyversion.VcsRef=$(VCS_REF) -X berty.tech/berty/v2/go/pkg/bertyversion.Version=$(VERSION)'
+  - id: darwin
+    binary: berty
     env:
       - CGO_ENABLED=1
-    goos:
-      - linux
-    goarch:
-      - amd64
+      - CC=$OSXCROSS_DIR/target/bin/o64-clang
+      - CXX=$OSXCROSS_DIR/target/bin/o64-clang++
+    goos: ['darwin']
+    goarch: ['amd64']
+    dir: go/cmd/berty
+    flags:
+      - "-a"
+    ldflags:
+      - '-X berty.tech/berty/v2/go/pkg/bertyversion.VcsRef=$(VCS_REF) -X berty.tech/berty/v2/go/pkg/bertyversion.Version=$(VERSION)'
+  - id: bertyguy
+    binary: bertygui
+    env: ['CGO_ENABLED=1']
+    goos: ['linux']
+    goarch: ['amd64']
     dir: go/cmd/berty
     flags:
       - "-a"
