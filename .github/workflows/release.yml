@@ -12,13 +12,20 @@ on:
       - "**.go"
       - ".github/workflows/release.yml"
 
+# this workflow consists of
+# * 1 build-asset job instance per target architecture/os, run even if the flow is not running against a release
+# * then, a semantic-release job if the workflow runs against a real release
 jobs:
-  release:
-    name: releaser
-    runs-on: ubuntu-latest
+  build-asset:
+    name: build asset
+    runs-on: ${{ matrix.runs-on }}
     strategy:
       matrix:
-        golang: [1.17.x]
+        - {runs-on: 'ubuntu-latest',  goos: 'linux',   goarch: 'amd64', golang: '1.17.x'}
+        - {runs-on: 'ubuntu-latest',  goos: 'linux',   goarch: 'arm64', golang: '1.17.x'}
+        - {runs-on: 'darwin-latest',  goos: 'darwin',  goarch: 'amd64', golang: '1.17.x'}
+        - {runs-on: 'windows-latest', goos: 'windows', goarch: 'amd64', golang: '1.17.x'}
+        # TODO: bertyguy
     env:
       OSXCROSS_DIR: /home/runner/work/osxcross
     steps:
@@ -28,16 +35,6 @@ jobs:
         uses: antifree/json-to-variables@v1.0.1
         with:
           filename: .github/workflows/utils/variables.json
-      - name: Unshallow
-        run: git fetch --prune --unshallow
-      - name: Run Semantic Release
-        id: semantic
-        uses: docker://ghcr.io/codfish/semantic-release-action:v1
-        with:
-          branches: |
-            ['master']
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Install goreleaser dependencies
         run: |
           # install osxcross
@@ -64,31 +61,48 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ matrix.golang }}-${{ env.json_cache-version_go }}-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-${{ matrix.golang }}-${{ env.json_cache-version_go }}-
-      - name: Run GoReleaser
-        if: steps.semantic.outputs.new-release-published == 'true'
-        uses: goreleaser/goreleaser-action@v2.9.1
-        with:
-          version: latest
-          args: release --rm-dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run GoReleaser (dry-run)
-        if: steps.semantic.outputs.new-release-published != 'true'
-        uses: goreleaser/goreleaser-action@v2.9.1
-        with:
-          version: latest
-          args: release --rm-dist --skip-publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Register version on pkg.go.dev
-        if: steps.semantic.outputs.new-release-published == 'true'
+      - name: Build binary
         run: |
-          package=$(cat go.mod | grep ^module | awk '{print $2}')
-          version=v${{ steps.semantic.outputs.release-version }}
-          url=https://proxy.golang.org/${package}/@v/${version}.info
-          set -x +e
-          curl -i $url
+          CGO_ENABLED=1 GOOS=${{matrix.goos}} GOARCH=${{matrix.goarch}} go build -a ./go/cmd/berty
 
+      # TODO: try to use goreleaser configuration and only call the command with a specific build
+
+      # TODO: upload artifact
+
+      #- name: Run GoReleaser
+      #  if: steps.semantic.outputs.new-release-published == 'true'
+      #  uses: goreleaser/goreleaser-action@v2.9.1
+      #  with:
+      #    version: latest
+      #    args: release --rm-dist
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #- name: Run GoReleaser (dry-run)
+      #  if: steps.semantic.outputs.new-release-published != 'true'
+      #  uses: goreleaser/goreleaser-action@v2.9.1
+      #  with:
+      #    version: latest
+      #    args: release --rm-dist --skip-publish
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    needs: [ build-asset ]
+    name: semantic release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Unshallow
+        run: git fetch --prune --unshallow
+      - name: Run Semantic Release
+        id: semantic
+        uses: docker://ghcr.io/codfish/semantic-release-action:v1
+        with:
+          branches: |
+            ['master']
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Next step also sets up a .npmrc file for automatic publishing to npm
       - uses: actions/setup-node@v2
         if: steps.semantic.outputs.new-release-published == 'true'
@@ -100,3 +114,11 @@ jobs:
         run: go run ./go/cmd/publish-npm-package -path=js/packages/api -version=${{ steps.semantic.outputs.release-version }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Register version on pkg.go.dev
+        if: steps.semantic.outputs.new-release-published == 'true'
+        run: |
+          package=$(cat go.mod | grep ^module | awk '{print $2}')
+          version=v${{ steps.semantic.outputs.release-version }}
+          url=https://proxy.golang.org/${package}/@v/${version}.info
+          set -x +e
+          curl -i $url
