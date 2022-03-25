@@ -18,14 +18,16 @@ on:
 jobs:
   build-asset:
     name: build asset
-    runs-on: ${{ matrix.runs-on }}
+    runs-on: ${{ matrix.run.runs-on }}
     strategy:
       matrix:
-        - {runs-on: 'ubuntu-latest',  goos: 'linux',   goarch: 'amd64', golang: '1.17.x'}
-        - {runs-on: 'ubuntu-latest',  goos: 'linux',   goarch: 'arm64', golang: '1.17.x'}
-        - {runs-on: 'darwin-latest',  goos: 'darwin',  goarch: 'amd64', golang: '1.17.x'}
-        - {runs-on: 'windows-latest', goos: 'windows', goarch: 'amd64', golang: '1.17.x'}
-        # TODO: bertyguy
+        run: [
+          {runs-on: 'ubuntu-latest',  goos: 'linux',   goarch: 'amd64', golang: '1.17.x'},
+          {runs-on: 'ubuntu-latest',  goos: 'linux',   goarch: 'arm64', golang: '1.17.x'},
+          {runs-on: 'darwin-latest',  goos: 'darwin',  goarch: 'amd64', golang: '1.17.x'},
+          {runs-on: 'windows-latest', goos: 'windows', goarch: 'amd64', golang: '1.17.x'},
+          # TODO: bertyguy
+        ]
     env:
       OSXCROSS_DIR: /home/runner/work/osxcross
     steps:
@@ -54,16 +56,16 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.golang }}
+          go-version: ${{ matrix.run.golang }}
       - name: Cache Go modules
         uses: actions/cache@v2.1.6
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ matrix.golang }}-${{ env.json_cache-version_go }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: ${{ runner.os }}-go-${{ matrix.golang }}-${{ env.json_cache-version_go }}-
+          key: ${{ runner.os }}-go-${{ matrix.run.golang }}-${{ env.json_cache-version_go }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-${{ matrix.run.golang }}-${{ env.json_cache-version_go }}-
       - name: Build binary
         run: |
-          CGO_ENABLED=1 GOOS=${{matrix.goos}} GOARCH=${{matrix.goarch}} go build -a ./go/cmd/berty
+          CGO_ENABLED=1 GOOS=${{matrix.run.goos}} GOARCH=${{matrix.run.goarch}} go build -a ./go/cmd/berty
 
       # TODO: try to use goreleaser configuration and only call the command with a specific build
 
