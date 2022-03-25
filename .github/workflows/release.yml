@@ -38,23 +38,22 @@ jobs:
             ['master']
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install multilib dependencies
+      - name: Install goreleaser dependencies
         run: |
+          # install osxcross
+          # install multilib
+          # install bertygui graphical libraries
+          # downgrade libssl for osxcross
+          echo 'deb http://security.ubuntu.com/ubuntu bionic-security main' | sudo tee -a /etc/apt/sources.list
           sudo apt update
-          sudo apt install -f
+          sudo apt-cache policy libssl1.0-dev
+          sudo apt install -f libssl1.0-dev
           sudo apt install -f gcc-multilib g++-multilib gcc-mingw-w64 clang
-      - name: Install bertygui dependencies
-        run: |
           sudo apt install -f -y libgl1-mesa-glx libgl1-mesa-dev xorg-dev
-      - name: Install osxcross
-        run: |
           mkdir ../../osxcross
           git clone https://github.com/plentico/osxcross-target.git ../../osxcross/target
       - name: Downgrade libssl for osxcross
         run: |
-          echo 'deb http://security.ubuntu.com/ubuntu bionic-security main' | sudo tee -a /etc/apt/sources.list
-          sudo apt update && apt-cache policy libssl1.0-dev
-          sudo apt-get install libssl1.0-dev
       - name: Set up Go
         uses: actions/setup-go@v2
         with:

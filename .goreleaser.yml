@@ -15,16 +15,16 @@ builds:
       - "-a"
     ldflags:
       - '-X berty.tech/berty/v2/go/pkg/bertyversion.VcsRef=$(VCS_REF) -X berty.tech/berty/v2/go/pkg/bertyversion.Version=$(VERSION)'
-  - id: windows
-    binary: berty
-    env: ['CGO_ENABLED=1']
-    goos: ['windows']
-    goarch: ['amd64']
-    dir: go/cmd/berty
-    flags:
-      - "-a"
-    ldflags:
-      - '-X berty.tech/berty/v2/go/pkg/bertyversion.VcsRef=$(VCS_REF) -X berty.tech/berty/v2/go/pkg/bertyversion.Version=$(VERSION)'
+  #- id: windows
+  #  binary: berty
+  #  env: ['CGO_ENABLED=1']
+  #  goos: ['windows']
+  #  goarch: ['amd64']
+  #  dir: go/cmd/berty
+  #  flags:
+  #    - "-a"
+  #  ldflags:
+  #    - '-X berty.tech/berty/v2/go/pkg/bertyversion.VcsRef=$(VCS_REF) -X berty.tech/berty/v2/go/pkg/bertyversion.Version=$(VERSION)'
   - id: darwin
     binary: berty
     env:
