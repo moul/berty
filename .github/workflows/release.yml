@@ -19,6 +19,8 @@ jobs:
     strategy:
       matrix:
         golang: [1.18.x]
+    env:
+      OSXCROSS_DIR: /home/runner/work/osxcross
     steps:
       - name: Checkout
         uses: actions/checkout@v3
