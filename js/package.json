@@ -41,7 +41,7 @@
 		"patch-package": "^6.4.7",
 		"postinstall-postinstall": "^2.1.0",
 		"prop-types": "^15.7.2",
-		"protobufjs": "^6.10.2",
+		"protobufjs": "^6.11.3",
 		"react": "16.13.1",
 		"react-i18next": "^11.8.6",
 		"react-native": "0.63.4",
