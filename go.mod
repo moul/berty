@@ -56,18 +56,22 @@ require (
 	github.com/koron/go-ssdp v0.0.2 // indirect
 	github.com/kr/pretty v0.2.1
 	github.com/kr/text v0.2.0 // indirect
-	github.com/libp2p/go-libp2p v0.13.0
+	github.com/libp2p/go-libp2p v6.0.23+incompatible
 	github.com/libp2p/go-libp2p-circuit v0.4.0
 	github.com/libp2p/go-libp2p-core v0.8.5
 	github.com/libp2p/go-libp2p-discovery v0.5.0
 	github.com/libp2p/go-libp2p-kad-dht v0.11.1
+	github.com/libp2p/go-libp2p-mplex v0.4.1 // indirect
 	github.com/libp2p/go-libp2p-noise v0.1.2 // indirect
 	github.com/libp2p/go-libp2p-pubsub v0.4.1
 	github.com/libp2p/go-libp2p-quic-transport v0.10.0
 	github.com/libp2p/go-libp2p-record v0.1.3
 	github.com/libp2p/go-libp2p-rendezvous v0.0.0-20180418151804-b7dd840ce441
+	github.com/libp2p/go-libp2p-swarm v0.4.0 // indirect
 	github.com/libp2p/go-libp2p-transport-upgrader v0.4.0
+	github.com/libp2p/go-libp2p-yamux v0.5.1 // indirect
 	github.com/libp2p/go-netroute v0.1.4 // indirect
+	github.com/libp2p/go-ws-transport v0.4.0 // indirect
 	github.com/markbates/pkger v0.17.1
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/mdomke/git-semver/v5 v5.0.0
@@ -94,6 +98,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tailscale/depaware v0.0.0-20201214215404-77d1e9757027
 	github.com/tj/assert v0.0.3
+	github.com/whyrusleeping/yamux v1.2.0 // indirect
 	github.com/zcalusic/sysinfo v0.0.0-20200820110305-ef1bb2697bc2
 	go.opencensus.io v0.22.5 // indirect
 	go.opentelemetry.io/otel v0.8.0
