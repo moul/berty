@@ -8537,10 +8537,10 @@ react-native-reanimated@^1.13.2:
   dependencies:
     fbjs "^1.0.0"
 
-react-native-restart@^0.0.20:
-  version "0.0.20"
-  resolved "https://registry.yarnpkg.com/react-native-restart/-/react-native-restart-0.0.20.tgz#6ed0244eb1e9a8d81cf7cadfb1f90dd4bb0754ec"
-  integrity sha512-lpWqKvfKaCfolosRHHH9+hDdjqMntEedRiLdVqmwNJejjfA4gUH+VEn0uhSaVueBgQJl5525X6B/0bSP55g+iQ==
+react-native-restart@^0.0.26:
+  version "0.0.26"
+  resolved "https://registry.yarnpkg.com/react-native-restart/-/react-native-restart-0.0.26.tgz#9bd16d866795cc8b91dd3e39eafc6b6c5f1ea92b"
+  integrity sha512-QYuMlhCxU6z8/ASw138fjLOjK8jGUqTHK8PftB0KvOSKAq3oZqY0WHapxnyg+cNEhKmnARseMF0naMkrIQY/fA==
 
 react-native-safe-area-context@^3.1.9:
   version "3.1.9"
